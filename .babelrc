@@ -1,0 +1,20 @@
+{
+  "presets": [
+    [
+      "next/babel",
+      {
+        "styled-jsx": {
+          "plugins": [
+            "styled-jsx-plugin-sass",
+            // Use 'autoprefixer' in 'postcss'
+            // "styled-jsx-plugin-postcss",
+
+          ],
+          // Cancel 'stylis' used by default in 'styled-jsx'
+          // "vendorPrefixes": false
+        }
+      }
+    ],
+    "@zeit/next-typescript/babel",
+  ]
+}
