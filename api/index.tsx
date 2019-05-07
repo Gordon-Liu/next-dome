@@ -1,7 +1,10 @@
-import { NextContext } from 'next'
+import { NextContext, NextComponentType } from 'next'
 import { NextAppContext } from 'next/app'
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
-import { RequestOptions } from 'https';
+import { RequestOptions } from 'https'
+import { createContext, Component, ComponentClass } from 'react'
+import PropTypes from 'prop-types'
+import { Context } from '~/interface'
 
 import market, { Market } from '~/api/market'
 
@@ -138,3 +141,44 @@ declare global {
         __API__: Api
     }
 }
+
+export interface defaultValue {
+    api?: Api
+}
+
+export const ApiContext = createContext<defaultValue>({})
+
+export function withApi<P = {}, IP = P>(
+    ComposedComponent: NextComponentType<P, IP, Context>
+): ComponentClass {
+    const displayName = `withApi(${ComposedComponent.displayName || ComposedComponent.name})`
+    class WithApi extends Component {
+        static displayName?: string
+        static getInitialProps?: any
+        static contextTypes = {
+            api: PropTypes.object,
+        }
+
+        context!: defaultValue
+
+        render() {
+            return (
+                <ApiContext.Consumer>
+                    {api => (
+                        <ComposedComponent
+                            api={api}
+                            {...this.props as any}
+                        />
+                    )}
+                </ApiContext.Consumer>
+            )
+        }
+    }
+
+    WithApi.displayName = displayName
+    WithApi.getInitialProps = ComposedComponent.getInitialProps
+
+    return WithApi
+}
+
+
