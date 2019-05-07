@@ -142,12 +142,21 @@ declare global {
     }
 }
 
+/*
+* createContext defaultValue
+*/
 export interface defaultValue {
     api?: Api
 }
 
+/*
+* Create context
+*/
 export const ApiContext = createContext<defaultValue>({})
 
+/*
+* https://github.com/zeit/next.js/blob/canary/packages/next/client/with-router.tsx
+*/
 export function withApi<P = {}, IP = P>(
     ComposedComponent: NextComponentType<P, IP, Context>
 ): ComponentClass {

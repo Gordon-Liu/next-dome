@@ -38,7 +38,6 @@ export default withApi<Props>(
         }
 
         render() {
-            // console.log(this, '---------------------------------')
             const keys = Object.keys(this.props.tickers.main)
             const list = keys.map((key: string) => {
                 const items = this.props.tickers.main[key].map((item: any) => (
