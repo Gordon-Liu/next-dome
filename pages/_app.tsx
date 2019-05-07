@@ -1,35 +1,51 @@
-import App, { Container } from 'next/app'
-import Api, { NextApiAppContext } from '~/api'
+import App, { Container, DefaultAppIProps, AppProps } from 'next/app'
+import Api, { NextApiAppContext, ApiContext } from '~/api'
 
-interface props {}
+interface Props extends DefaultAppIProps, AppProps {
+}
 
 interface Context extends NextApiAppContext {}
 
-export default class extends App<props, {}> {
+function createApi(context: Context): Api {
+    if (!process.browser) {
+        return new Api(context.ctx.req)
+    } else {
+        if (!window.hasOwnProperty(Api.key)) {
+            window[Api.key] = new Api()
+        }
+        return window[Api.key]
+    }
+}
+
+export default class extends App<Props, {}> {
+    protected api: Api
+
     static async getInitialProps (context: Context) {
         let pageProps
         
         if (context.Component.getInitialProps) {
-            if (!process.browser) {
-                context.ctx.api = new Api(context.ctx.req)
-            } else {
-                if (!window.hasOwnProperty(Api.key)) {
-                    window[Api.key] = new Api()
-                }
-                context.ctx.api = window[Api.key]
-            }
+            context.ctx.api = createApi(context)  
             pageProps = await context.Component.getInitialProps(context.ctx)
         }
         return {
             pageProps
         }
     }
+
+    constructor(props: Props) {
+        super(props)
+        this.api = new Api()
+    }
   
     render () {
         const { Component, pageProps } = this.props
         return (
             <Container>
-                <Component {...pageProps} />
+                <ApiContext.Provider value={{
+                    api: this.api
+                }}>
+                    <Component {...pageProps} />
+                </ApiContext.Provider>
             </Container>   
         )
     }
