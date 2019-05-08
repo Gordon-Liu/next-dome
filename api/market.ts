@@ -1,11 +1,11 @@
-import Api, { DataPromise, Data } from '~/api'
+import { ApiInstance, DataPromise, Data } from '~/api'
 
 export interface Market {
     tickers(): DataPromise<Data>
     kline(type: number): DataPromise<Data>
 }
 
-export default (api: Api): Market => {
+export default (api: ApiInstance): Market => {
     return {
         /*
          * 所有交易对的最新 Tickers

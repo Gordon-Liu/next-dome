@@ -1,17 +1,21 @@
 import Link from 'next/link'
-import React from 'react'
+import { Component } from 'react'
 import css from '~/styles/home.scss'
-import { Context } from '~/interface'
+import { Context, ApiProps, RouterProps } from '~/interface'
 import { withApi } from '~/api'
+import { withRouter } from 'next/router'
 
-
-interface Props {
-    name: string,
+interface IProps {
+    name: string
     tickers: any
 }
 
-export default withApi<Props>(
-    class extends React.Component<Props, {}> {
+interface Props extends IProps, ApiProps, RouterProps{}
+
+interface State {}
+
+export default withRouter(withApi<Props, IProps>(
+    class extends Component<Props, State> {
         static async getInitialProps(context: Context) {
             const { api } = context
             let tickers = {
@@ -28,13 +32,12 @@ export default withApi<Props>(
             }
         }
 
-        constructor(props: Props) {
-            super(props)
-            // console.log(props, '+++++++++++++++++++++++++++++++++')
-        }
+        // constructor(props: Props) {
+        //     super(props)
+        // }
 
         componentDidMount() {
-            console.log(this.props)
+            console.log(this.props.api)
         }
 
         render() {
@@ -70,5 +73,5 @@ export default withApi<Props>(
             )
         }
     }
-)
+))
 

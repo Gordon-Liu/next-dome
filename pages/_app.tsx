@@ -1,13 +1,13 @@
 import App, { Container, DefaultAppIProps, AppProps } from 'next/app'
-import Api, { NextApiAppContext, ApiContext } from '~/api'
+import Api, { ApiInstance, NextApiAppContext, ApiContext } from '~/api'
 
 interface Props extends DefaultAppIProps, AppProps {
 }
 
 interface Context extends NextApiAppContext {}
 
-function createApi(context: Context): Api {
-    if (!process.browser) {
+function createApi(context?: Context): ApiInstance {
+    if (!process.browser && context) {
         return new Api(context.ctx.req)
     } else {
         if (!window.hasOwnProperty(Api.key)) {
@@ -18,7 +18,7 @@ function createApi(context: Context): Api {
 }
 
 export default class extends App<Props, {}> {
-    protected api: Api
+    protected api: ApiInstance
 
     static async getInitialProps (context: Context) {
         let pageProps
@@ -34,7 +34,7 @@ export default class extends App<Props, {}> {
 
     constructor(props: Props) {
         super(props)
-        this.api = new Api()
+        this.api = createApi()
     }
   
     render () {

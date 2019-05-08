@@ -27,13 +27,27 @@ export interface DataPromise<T = any> extends Promise<T> {
  * 挂载 NextContext
  */
 export interface NextApiContext extends NextContext {
-    api: Api
+    api: ApiInstance
 }
 export interface NextApiAppContext extends NextAppContext {
     ctx: NextApiContext
 }
 
-export default class Api {
+export interface ApiInstance {
+    axios: AxiosInstance
+    interceptResponse(res: AxiosResponse): Data
+    interceptError(err: AxiosError): Data
+    request(config: AxiosRequestConfig): DataPromise<Data>
+    get(url: string, config?: AxiosRequestConfig): DataPromise<Data>
+    delete(url: string, config?: AxiosRequestConfig): DataPromise
+    head(url: string, config?: AxiosRequestConfig): DataPromise
+    post(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data>
+    put(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data>
+    patch(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data>
+    readonly market: Market
+}
+
+export default class Api implements ApiInstance {
     static key: key = '__API__'
 
     axios: AxiosInstance
@@ -138,7 +152,7 @@ export default class Api {
 */
 declare global {
     interface Window {
-        __API__: Api
+        __API__: ApiInstance
     }
 }
 
@@ -146,7 +160,7 @@ declare global {
 * createContext defaultValue
 */
 export interface defaultValue {
-    api?: Api
+    api?: ApiInstance
 }
 
 /*
@@ -157,7 +171,7 @@ export const ApiContext = createContext<defaultValue>({})
 /*
 * https://github.com/zeit/next.js/blob/canary/packages/next/client/with-router.tsx
 */
-export function withApi<P = {}, IP = P>(
+export function withApi<P, IP = P>(
     ComposedComponent: NextComponentType<P, IP, Context>
 ): ComponentClass {
     const displayName = `withApi(${ComposedComponent.displayName || ComposedComponent.name})`
