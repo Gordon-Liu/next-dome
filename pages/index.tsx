@@ -37,7 +37,7 @@ export default withRouter(withApi<Props, IProps>(
         // }
 
         componentDidMount() {
-            console.log(this.props.api)
+            console.log(this.props.router.pathname)
         }
 
         render() {
