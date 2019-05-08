@@ -3,7 +3,6 @@ import { NextAppContext } from 'next/app'
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { RequestOptions } from 'https'
 import { createContext, Component, ComponentClass } from 'react'
-import PropTypes from 'prop-types'
 import { Context } from '~/interface'
 
 import market, { Market } from '~/api/market'
@@ -171,18 +170,20 @@ export const ApiContext = createContext<defaultValue>({})
 /*
 * https://github.com/zeit/next.js/blob/canary/packages/next/client/with-router.tsx
 */
-export function withApi<P, IP = P>(
+
+interface WithApiProps {
+    api: ApiInstance
+}
+
+type ApiProps<IP> = IP & WithApiProps
+
+export function withApi<P extends ApiProps<IP>, IP>(
     ComposedComponent: NextComponentType<P, IP, Context>
-): ComponentClass {
+): ComponentClass<P> {
     const displayName = `withApi(${ComposedComponent.displayName || ComposedComponent.name})`
-    class WithApi extends Component {
+    class WithApi extends Component<P> {
         static displayName?: string
         static getInitialProps?: any
-        static contextTypes = {
-            api: PropTypes.object,
-        }
-
-        context!: defaultValue
 
         render() {
             return (
@@ -205,3 +206,13 @@ export function withApi<P, IP = P>(
 }
 
 
+// export function SSSSS<T extends {}>(s: T){
+//     return s
+// }
+// interface BBBB {
+//     ssss: string
+// }
+// SSSSS<BBBB>({
+//     ssss: 'dasdasd',
+//     sadas: 'dsad'
+// })

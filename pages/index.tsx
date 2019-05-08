@@ -1,27 +1,34 @@
 import Link from 'next/link'
 import { Component } from 'react'
 import css from '~/styles/home.scss'
-import { Context, ApiProps, RouterProps } from '~/interface'
+import { Context, ApiProps, RouterProps1 } from '~/interface'
 import { withApi } from '~/api'
-import { withRouter } from 'next/router'
+import { withRouter, WithRouterProps } from 'next/router'
 
 interface IProps {
     name: string
     tickers: any
 }
 
-interface Props extends IProps, ApiProps, RouterProps{}
+interface Props extends IProps, ApiProps {}
 
-interface State {}
+// type PW = Props & WithRouterProps
 
-export default withRouter(withApi<Props, IProps>(
-    class extends Component<Props, State> {
+
+
+interface State {
+    count: number
+}
+
+export default withApi<Props, IProps>(withRouter<Props>(
+    class extends Component<Props & WithRouterProps, State> {
         static async getInitialProps(context: Context) {
             const { api } = context
             let tickers = {
                 main: {}
             }
             let res = await api.market.tickers()
+            console.log(res)
             if (res.code === 0) {
                 tickers = res.data
             }
@@ -32,12 +39,26 @@ export default withRouter(withApi<Props, IProps>(
             }
         }
 
-        // constructor(props: Props) {
-        //     super(props)
-        // }
+        constructor(props: Props & WithRouterProps) {
+            super(props)
+            console.log(this.props)
+            this.state = {
+                count: 0
+            }
+        }
 
         componentDidMount() {
-            console.log(this.props.router.pathname)
+            // if (this.props.router) {
+                console.log(this.props.router)
+                let { router } = this.props
+                console.log(router && router.pathname)
+            // }
+            
+            // setInterval(() => {
+            //     this.setState({
+            //         count: this.state.count + 1
+            //     })
+            // }, 1000)
         }
 
         render() {
@@ -60,6 +81,9 @@ export default withRouter(withApi<Props, IProps>(
                     <Link prefetch href={{pathname: '/about'}}>
                         <a>关于</a>
                     </Link>
+                    <div>
+                        {this.state.count}
+                    </div>
                     <div>
                         {list}
                     </div>
