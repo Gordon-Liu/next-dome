@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { Component } from 'react'
-import css from '~/styles/home.scss'
-import { Context, ApiProps, RouterProps1 } from '~/interface'
+import { withRouter } from 'next/router'
+
+import { Context, ApiProps, RouterPropsType } from '~/interface'
 import { withApi } from '~/api'
-import { withRouter, WithRouterProps } from 'next/router'
+import css from '~/styles/home.scss'
 
 interface IProps {
     name: string
@@ -12,16 +13,12 @@ interface IProps {
 
 interface Props extends IProps, ApiProps {}
 
-// type PW = Props & WithRouterProps
-
-
-
 interface State {
     count: number
 }
 
-export default withApi<Props, IProps>(withRouter<Props>(
-    class extends Component<Props & WithRouterProps, State> {
+export default withRouter<RouterPropsType<Props>>(withApi<RouterPropsType<Props>, IProps>(
+    class extends Component<RouterPropsType<Props>, State> {
         static async getInitialProps(context: Context) {
             const { api } = context
             let tickers = {
@@ -39,26 +36,16 @@ export default withApi<Props, IProps>(withRouter<Props>(
             }
         }
 
-        constructor(props: Props & WithRouterProps) {
+        constructor(props: RouterPropsType<Props>) {
             super(props)
-            console.log(this.props)
             this.state = {
                 count: 0
             }
         }
 
         componentDidMount() {
-            // if (this.props.router) {
-                console.log(this.props.router)
-                let { router } = this.props
-                console.log(router && router.pathname)
-            // }
-            
-            // setInterval(() => {
-            //     this.setState({
-            //         count: this.state.count + 1
-            //     })
-            // }, 1000)
+            let { router } = this.props
+            console.log(router.pathname)
         }
 
         render() {
