@@ -1,7 +1,22 @@
 import { SingletonRouter } from 'next/router'
-import { ApiInstance as Api, NextApiContext } from "~/api"
+import { NextContext } from 'next'
+import { NextAppContext } from 'next/app'
+import { Store } from 'redux'
 
-export interface Context extends NextApiContext {}
+import { ApiInstance as Api } from "~/api"
+
+/*
+ * 挂载 NextContext
+ */
+export interface Context extends NextContext {
+    api: Api
+    store: Store
+}
+
+export interface AppContext extends NextAppContext {
+    ctx: Context
+}
+
 export interface ApiProps {
     api: Api
 }

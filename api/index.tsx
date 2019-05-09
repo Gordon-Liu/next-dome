@@ -22,15 +22,6 @@ export interface Data {
  */
 export interface DataPromise<T = any> extends Promise<T> {
 }
-/*
- * 挂载 NextContext
- */
-export interface NextApiContext extends NextContext {
-    api: ApiInstance
-}
-export interface NextApiAppContext extends NextAppContext {
-    ctx: NextApiContext
-}
 
 export interface ApiInstance {
     axios: AxiosInstance
