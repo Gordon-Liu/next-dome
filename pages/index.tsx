@@ -1,14 +1,14 @@
 import Link from 'next/link'
-import { Component } from 'react'
 import { withRouter } from 'next/router'
+import { Component } from 'react'
 import { connect } from 'react-redux'
-
-import { Context, ApiProps, RouterPropsType } from '~/interface'
 import { withApi } from '~/api'
+import { ApiProps, Context, RouterPropsType } from '~/interface'
 import { StoreState } from '~/store'
 import { updateSex } from '~/store/user/actions'
 import { UserState } from '~/store/user/types'
 import css from '~/styles/home.scss'
+
 
 interface IProps {
     name: string
@@ -32,15 +32,15 @@ export default connect((state: StoreState) => ({
     class extends Component<RouterPropsType<Props>, State> {
         static async getInitialProps(context: Context) {
             const { api, store, pathname } = context
-            console.log(pathname)
+            // console.log(pathname)
             let tickers = {
                 main: {}
             }
-            let s: string
-            let res = await api.market.tickers<string>()
-            if (res.code === 0) {
-                s = res.data
-            }
+            let res = await api.market.tickers()
+            console.log(res)
+            // if (res.code === 0) {
+            //     tickers = res.data
+            // }
             
             return {
                 name: '房贷首付',
@@ -55,8 +55,9 @@ export default connect((state: StoreState) => ({
             }
         }
 
-        componentDidMount() {
-            console.log(this.props)
+        async componentDidMount() {
+            let res = await this.props.api.market.tickers()
+            console.log(res)
         }
 
         render() {
@@ -94,7 +95,7 @@ export default connect((state: StoreState) => ({
                     <style jsx>{ css }</style>
                     <style jsx>{`
                         div {
-                            color: red;
+                            color: red
                         }
                     `}</style>
                 </div>

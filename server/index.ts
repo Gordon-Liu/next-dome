@@ -1,39 +1,44 @@
-const express = require('express')
-const next = require('next')
+/*
+ * https://github.com/zeit/next.js/issues/2744
+ */
+import * as express from 'express'
+import * as proxy from 'http-proxy-middleware'
+import * as next from 'next'
+import { IncomingMessage, ServerResponse } from 'http'
 
-const port = parseInt(process.env.PORT, 10) || 3000
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev })
 const handle = app.getRequestHandler()
 
+interface Proxy {
+    [key: string]: proxy.Config
+}
+
 app.prepare().then(() => {
     const server = express()
 
-    server.get('/', (req, res) => {
-        console.log('11111111111')
-        return app.render(req, res, '/index', req.query)
-    })
+    const proxyConfig: Proxy = {
+        [app.nextConfig.env.proxyPrefix]: {
+            target: app.nextConfig.env.proxyTarget,
+            pathRewrite: { 
+                [`^${app.nextConfig.env.proxyPrefix}`]: '/' 
+            },
+            changeOrigin: true
+        }
+    }
 
-    server.get('/help', (req, res) => {
-        console.log('22222222222')
-        return app.render(req, res, '/help', req.query)
+    Object.keys(proxyConfig).forEach((key: string) => {
+        server.use(key, proxy(proxyConfig[key]))
     })
+    
+    server.all('*', (req: IncomingMessage, res: ServerResponse) => handle(req, res))
 
-    server.get('/about', (req, res) => {
-        console.log('33333333333')
-        return app.render(req, res, '/about', req.query)
-    })
-
-    server.get('/posts/:id', (req, res) => {
-        return app.render(req, res, '/posts', { id: req.params.id })
-    })
-
-    server.get('*', (req, res) => {
-        return handle(req, res)
-    })
-
-    server.listen(port, err => {
+    server.listen(port, (err: any) => {
         if (err) throw err
         console.log(`> Ready on http://localhost:${port}`)
     })
+}).catch((err: any) => {
+    console.log('An error occurred, unable to start the server')
+    console.log(err)
 })

@@ -54,7 +54,6 @@ export default class Api implements ApiInstance {
             patch: {}
         }
         const baseURL = process.browser ? process.env.proxyPrefix : process.env.proxyTarget
-        
         if (!process.browser) {
             if (req) {
                 headers.common = (req && req.headers) ? Object.assign({}, req.headers) : {}
@@ -181,9 +180,9 @@ export function withApi<P extends ApiProps<IP>, IP>(
         render() {
             return (
                 <ApiContext.Consumer>
-                    {api => (
+                    {value => (
                         <ComposedComponent
-                            api={api}
+                            api={value && value.api}
                             {...this.props as any}
                         />
                     )}

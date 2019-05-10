@@ -10,12 +10,8 @@ export default (api: ApiInstance): Market => {
         /*
          * 所有交易对的最新 Tickers
          */
-        tickers(): DataPromise {
-            return api.get('/rt/getTradeLists', {
-                headers: {
-                    'X-Forwarded-Host': 'www.bcex.hk'
-                }
-            })
+        tickers() {
+            return api.get('/market/tickers')
         },
         kline(type: number) {
             return api.get('/rt/getTradeLists', {
