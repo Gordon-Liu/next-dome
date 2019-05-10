@@ -1,8 +1,8 @@
 import { ApiInstance, DataPromise, Data } from '~/api'
 
 export interface Market {
-    tickers(): DataPromise<Data>
-    kline(type: number): DataPromise<Data>
+    tickers<D = any>(): DataPromise<Data<D>>
+    kline<D = any>(type: number): DataPromise<Data<D>>
 }
 
 export default (api: ApiInstance): Market => {
@@ -10,14 +10,14 @@ export default (api: ApiInstance): Market => {
         /*
          * 所有交易对的最新 Tickers
          */
-        tickers() {
+        tickers(): DataPromise {
             return api.get('/rt/getTradeLists', {
                 headers: {
                     'X-Forwarded-Host': 'www.bcex.hk'
                 }
             })
         },
-        kline(type) {
+        kline(type: number) {
             return api.get('/rt/getTradeLists', {
                 headers: {
                     'X-Forwarded-Host': 'www.bcex.hk'

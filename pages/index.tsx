@@ -36,9 +36,10 @@ export default connect((state: StoreState) => ({
             let tickers = {
                 main: {}
             }
-            let res = await api.market.tickers()
+            let s: string
+            let res = await api.market.tickers<string>()
             if (res.code === 0) {
-                tickers = res.data
+                s = res.data
             }
             
             return {

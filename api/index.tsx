@@ -1,5 +1,4 @@
-import { NextContext, NextComponentType } from 'next'
-import { NextAppContext } from 'next/app'
+import { NextComponentType } from 'next'
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { RequestOptions } from 'https'
 import { createContext, Component, ComponentClass } from 'react'
@@ -12,10 +11,10 @@ type key = '__API__'
 /*
  * 接口返回值
  */
-export interface Data {
+export interface Data<D = any> {
     code: string | number | undefined
     message: string | undefined
-    data?: any
+    data: D
 }
 /*
  * DataPromise 代替 AxiosPromise
@@ -25,15 +24,15 @@ export interface DataPromise<T = any> extends Promise<T> {
 
 export interface ApiInstance {
     axios: AxiosInstance
-    interceptResponse(res: AxiosResponse): Data
-    interceptError(err: AxiosError): Data
-    request(config: AxiosRequestConfig): DataPromise<Data>
-    get(url: string, config?: AxiosRequestConfig): DataPromise<Data>
+    interceptResponse<D = any>(res: AxiosResponse): Data<D>
+    interceptError<D = any>(err: AxiosError): Data<D>
+    request<D = any>(config: AxiosRequestConfig): DataPromise<Data<D>>
+    get<D = any>(url: string, config?: AxiosRequestConfig): DataPromise<Data<D>>
     delete(url: string, config?: AxiosRequestConfig): DataPromise
     head(url: string, config?: AxiosRequestConfig): DataPromise
-    post(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data>
-    put(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data>
-    patch(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data>
+    post<D = any>(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data<D>>
+    put<D = any>(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data<D>>
+    patch<D = any>(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data<D>>
     readonly market: Market
 }
 
@@ -84,7 +83,8 @@ export default class Api implements ApiInstance {
         } else {
             return {
                 code: 500,
-                message: 'Return value is null'
+                message: 'Return value is null',
+                data: null
             }
         }
     }
@@ -95,37 +95,39 @@ export default class Api implements ApiInstance {
         if (err && err.response) {
             return {
                 code: err.response.status,
-                message: err.message
+                message: err.message,
+                data: null
             }
         } else {
             return {
                 code: err.code,
-                message: err.code
+                message: err.code,
+                data: null
             }
         }
     }
     /*
     * 重写 request get delete head post put patch 请求
     */
-    request(config: AxiosRequestConfig): DataPromise<Data> {
+    request(config: AxiosRequestConfig) {
         return this.axios.request(config).then(this.interceptResponse).catch(this.interceptError)
     }
-    get(url: string, config?: AxiosRequestConfig): DataPromise<Data> {
+    get(url: string, config?: AxiosRequestConfig) {
         return this.axios.get(url, config).then(this.interceptResponse).catch(this.interceptError)
     }
-    delete(url: string, config?: AxiosRequestConfig): DataPromise {
+    delete(url: string, config?: AxiosRequestConfig) {
         return this.axios.delete(url, config).then(this.interceptResponse).catch(this.interceptError)
     }
-    head(url: string, config?: AxiosRequestConfig): DataPromise {
+    head(url: string, config?: AxiosRequestConfig) {
         return this.axios.head(url, config).then(this.interceptResponse).catch(this.interceptError)
     }
-    post(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data> {
+    post(url: string, data?: any, config?: AxiosRequestConfig) {
         return this.axios.post(url, data, config).then(this.interceptResponse).catch(this.interceptError)
     }
-    put(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data> {
+    put(url: string, data?: any, config?: AxiosRequestConfig) {
         return this.axios.put(url, data, config).then(this.interceptResponse).catch(this.interceptError)
     }
-    patch(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data> {
+    patch(url: string, data?: any, config?: AxiosRequestConfig) {
         return this.axios.patch(url, data, config).then(this.interceptResponse).catch(this.interceptError)
     }
 
