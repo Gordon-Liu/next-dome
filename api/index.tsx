@@ -1,6 +1,6 @@
 import { NextComponentType } from 'next'
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
-import { RequestOptions } from 'https'
+import { IncomingMessage } from 'http'
 import { createContext, Component, ComponentClass } from 'react'
 import { Context } from '~/interface'
 
@@ -41,7 +41,7 @@ export default class Api implements ApiInstance {
 
     axios: AxiosInstance
 
-    constructor(req?: RequestOptions) {
+    constructor(req?: IncomingMessage) {
         const headers: any = {
             common : {
                 'Accept': 'application/json, text/plain, */*'
@@ -196,15 +196,15 @@ export function withApi<P extends ApiProps<IP>, IP>(
 
     return WithApi
 }
-
-
-// export function SSSSS<T extends {}>(s: T){
-//     return s
-// }
-// interface BBBB {
-//     ssss: string
-// }
-// SSSSS<BBBB>({
-//     ssss: 'dasdasd',
-//     sadas: 'dsad'
-// })
+ 
+export class ApiProvider extends Component<WithApiProps> { 
+    render() {
+        return (
+            <ApiContext.Provider value={{
+                api: this.props.api
+            }}>
+                {this.props.children}
+            </ApiContext.Provider>
+        )
+    }
+}

@@ -9,7 +9,6 @@ import { updateSex } from '~/store/user/actions'
 import { UserState } from '~/store/user/types'
 import css from '~/styles/home.scss'
 
-
 interface IProps {
     name: string
     tickers: any
@@ -57,10 +56,11 @@ export default connect((state: StoreState) => ({
 
         async componentDidMount() {
             let res = await this.props.api.market.tickers()
-            console.log(res)
+            // console.log(res)
         }
 
         render() {
+            console.log(this.props)
             const keys = Object.keys(this.props.tickers.main)
             const list = keys.map((key: string) => {
                 const items = this.props.tickers.main[key].map((item: any) => (
@@ -72,7 +72,7 @@ export default connect((state: StoreState) => ({
             })        
 
             return (
-                <div>
+                <div className="home">
                     Hellow { this.props.name }
                     <Link href={{pathname: '/help'}}>
                         <a>帮助</a>
@@ -95,7 +95,10 @@ export default connect((state: StoreState) => ({
                     <style jsx>{ css }</style>
                     <style jsx>{`
                         div {
-                            color: red
+                            color: green;
+                            a {
+                                color: #000;
+                            }
                         }
                     `}</style>
                 </div>

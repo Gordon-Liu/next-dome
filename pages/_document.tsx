@@ -12,10 +12,10 @@ export default class extends Document {
         return (
             <html>
                 <Head>
-
+                    <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico" />
                 </Head>
                 <body>
-                    <Main/>
+                    <Main />
                     <NextScript />
                 </body>
             </html>

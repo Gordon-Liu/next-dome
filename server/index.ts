@@ -4,7 +4,6 @@
 import * as express from 'express'
 import * as proxy from 'http-proxy-middleware'
 import * as next from 'next'
-import { IncomingMessage, ServerResponse } from 'http'
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 const dev = process.env.NODE_ENV !== 'production'
@@ -32,7 +31,7 @@ app.prepare().then(() => {
         server.use(key, proxy(proxyConfig[key]))
     })
     
-    server.all('*', (req: IncomingMessage, res: ServerResponse) => handle(req, res))
+    server.all('*', (req: express.Request, res: express.Response) => handle(req, res))
 
     server.listen(port, (err: any) => {
         if (err) throw err
