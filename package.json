@@ -21,7 +21,8 @@
     "react-redux": "^7.0.3",
     "redux": "^4.0.1",
     "redux-devtools-extension": "^2.13.8",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "tradingview": "./tradingview"
   },
   "devDependencies": {
     "@types/css-modules": "^1.0.0",

@@ -1,0 +1,15 @@
+{
+    "name": "tradingview",
+    "version": "4.1.0",
+    "description": "Another simple argument parser",
+    "main": "charting_library/charting_library.min.js",
+    "types": "charting_library/charting_library.min.d.ts",
+    "repository": "zeit/arg",
+    "author": "Josh Junon <junon@zeit.co>",
+    "license": "MIT",
+    "files": [
+      "charting_library/charting_library.min.js",
+      "charting_library/charting_library.min.d.ts"
+    ]
+  }
+  

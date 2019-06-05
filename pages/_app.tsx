@@ -41,7 +41,7 @@ export default class extends App<Props, {}> {
     protected store: Store
 
     static async getInitialProps (context: AppContext) {
-        let pageProps
+        let pageProps = {}
         
         context.ctx.api = createApi(context.ctx.req)  
         context.ctx.store = createStore()  

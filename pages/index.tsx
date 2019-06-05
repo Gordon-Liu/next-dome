@@ -80,6 +80,9 @@ export default connect((state: StoreState) => ({
                     <Link prefetch href={{pathname: '/about'}}>
                         <a>关于</a>
                     </Link>
+                    <Link href={{pathname: '/kline'}}>
+                        <a>KLINE</a>
+                    </Link>
                     <div>
                         {
                             this.props.user.sex === 0 ? '女' : '男'

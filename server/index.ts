@@ -33,8 +33,7 @@ app.prepare().then(() => {
     
     server.all('*', (req: express.Request, res: express.Response) => handle(req, res))
 
-    server.listen(port, (err: any) => {
-        if (err) throw err
+    server.listen(port, () => {
         console.log(`> Ready on http://localhost:${port}`)
     })
 }).catch((err: any) => {
