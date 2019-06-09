@@ -3,7 +3,7 @@ import { withRouter } from 'next/router'
 import { Component } from 'react'
 import { connect } from 'react-redux'
 import { withApi } from '~/api'
-import { ApiProps, Context, RouterPropsType } from '~/interface'
+import { ApiProps, RouterProps, Context } from '~/interface'
 import { StoreState } from '~/store'
 import { updateSex } from '~/store/user/actions'
 import { UserState } from '~/store/user/types'
@@ -14,7 +14,7 @@ interface IProps {
     tickers: any
 }
 
-interface Props extends IProps, ApiProps {
+interface Props extends IProps, ApiProps, RouterProps{
     user: UserState
     updateSex: typeof updateSex
 }
@@ -27,16 +27,16 @@ export default connect((state: StoreState) => ({
     user: state.user
 }), {
     updateSex
-})(withRouter<RouterPropsType<Props>>(withApi<RouterPropsType<Props>, IProps>(
-    class extends Component<RouterPropsType<Props>, State> {
+})(withRouter(withApi(
+    class extends Component<Props, State> {
         static async getInitialProps(context: Context) {
-            const { api, store, pathname } = context
-            // console.log(pathname)
+            // const { api, store, pathname } = context
+            console.log(context)
             let tickers = {
                 main: {}
             }
-            let res = await api.market.tickers()
-            console.log(res)
+            // let res = await api.market.tickers()
+            // console.log(res)
             // if (res.code === 0) {
             //     tickers = res.data
             // }
@@ -47,7 +47,7 @@ export default connect((state: StoreState) => ({
             }
         }
 
-        constructor(props: RouterPropsType<Props>) {
+        constructor(props: Props) {
             super(props)
             this.state = {
                 count: 0
@@ -55,12 +55,13 @@ export default connect((state: StoreState) => ({
         }
 
         async componentDidMount() {
+            console.log(this.props)
             let res = await this.props.api.market.tickers()
-            // console.log(res)
+            console.log(res)
         }
 
         render() {
-            console.log(this.props)
+            console.log(this.props.router)
             const keys = Object.keys(this.props.tickers.main)
             const list = keys.map((key: string) => {
                 const items = this.props.tickers.main[key].map((item: any) => (

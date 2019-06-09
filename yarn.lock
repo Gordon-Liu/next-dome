@@ -5824,8 +5824,8 @@ tough-cookie@~2.4.3:
     psl "^1.1.24"
     punycode "^1.4.1"
 
-tradingview@./tradingview:
-  version "4.1.0"
+tradingview@./static/tradingview/:
+  version "1.14.0"
 
 trim-newlines@^1.0.0:
   version "1.0.0"

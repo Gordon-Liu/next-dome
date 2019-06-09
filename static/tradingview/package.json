@@ -1,0 +1,14 @@
+{
+    "name": "tradingview",
+    "version": "1.14.0",
+    "description": "tradingview",
+    "main": "charting_library/charting_library.min.js",
+    "types": "charting_library/charting_library.min.d.ts",
+    "repository": "tradingview",
+    "author": "lgd",
+    "license": "MIT",
+    "files": [
+        "charting_library/charting_library.min.js",
+        "charting_library/charting_library.min.d.ts"
+    ]
+}

@@ -1,10 +1,10 @@
-import { NextComponentType } from 'next'
+import { NextComponentType, NextContext } from 'next'
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { IncomingMessage } from 'http'
 import { createContext, Component, ComponentClass } from 'react'
-import { Context } from '~/interface'
 
 import market, { Market } from '~/api/market'
+import rt, { Rt } from '~/api/rt'
 
 type key = '__API__'
 
@@ -34,6 +34,7 @@ export interface ApiInstance {
     put<D = any>(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data<D>>
     patch<D = any>(url: string, data?: any, config?: AxiosRequestConfig): DataPromise<Data<D>>
     readonly market: Market
+    readonly rt: Rt
 }
 
 export default class Api implements ApiInstance {
@@ -136,6 +137,10 @@ export default class Api implements ApiInstance {
     get market(): Market {
         return market(this)
     }
+
+    get rt(): Rt {
+        return rt(this)
+    }
 }
 
 /*
@@ -167,13 +172,25 @@ interface WithApiProps {
     api: ApiInstance
 }
 
-type ApiProps<IP> = IP & WithApiProps
+export type ExcludeApiProps<P> = Pick<
+  P,
+  Exclude<keyof P, keyof WithApiProps>
+>
 
-export function withApi<P extends ApiProps<IP>, IP>(
-    ComposedComponent: NextComponentType<P, IP, Context>
-): ComponentClass<P> {
+// type ApiProps<IP> = IP & WithApiProps
+
+// export function withApi<P extends ApiProps<IP>, IP = {}>(
+//     ComposedComponent: NextComponentType<P, IP, Context>
+// ): ComponentClass<P> {
+// export function withApi<P>(
+//     ComposedComponent: ComponentType<P>
+// ): ComponentType<P> {
+export function withApi<P extends WithApiProps, C = NextContext>(
+    ComposedComponent: NextComponentType<P, any, C>
+): ComponentClass<ExcludeApiProps<P>> {
     const displayName = `withApi(${ComposedComponent.displayName || ComposedComponent.name})`
-    class WithApi extends Component<P> {
+    class WithApi extends Component<ExcludeApiProps<P>> {
+    // class WithApi extends Component<P> {
         static displayName?: string
         static getInitialProps?: any
 

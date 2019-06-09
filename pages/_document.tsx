@@ -13,8 +13,6 @@ export default class extends Document {
             <html>
                 <Head>
                     <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico" />
-                    <script src="/static/tradingview/datafeeds/udf/dist/polyfills.js"></script>
-		            <script src="/static/tradingview/datafeeds/udf/dist/bundle.js"></script>
                 </Head>
                 <body>
                     <Main />
