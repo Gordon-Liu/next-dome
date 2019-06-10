@@ -3,41 +3,24 @@ import {
 	HistoryMetadata,
 	LibrarySymbolInfo,
 } from 'tradingview/charting_library/datafeed-api'
+import { getErrorMessage } from './helpers'
 
-import {
-	getErrorMessage,
-	RequestParams,
-	UdfErrorResponse,
-	UdfOkResponse,
-	UdfResponse,
-} from './helpers'
-
-import { Requester } from './requester'
-
-interface HistoryPartialDataResponse extends UdfOkResponse {
-	t: number[]
-	c: number[]
-	o?: never
-	h?: never
-	l?: never
-	v?: never
+export interface DataProvider {
+	timestamp: number
+	c_price: string
+	o_price: string
+	max_price: string
+	min_price: string
+	amount: string
 }
 
-interface HistoryFullDataResponse extends UdfOkResponse {
-	t: number[]
-	c: number[]
-	o: number[]
-	h: number[]
-	l: number[]
-	v: number[]
-}
+export type DataProviderFunction = () => Promise<Array<DataProvider>>
 
-interface HistoryNoDataResponse extends UdfResponse {
-	s: 'no_data'
-	nextTime?: number
+interface LastDataProvider {
+	symbol?: string
+	interval?: string
+	dataProvider?: DataProvider
 }
-
-type HistoryResponse = HistoryFullDataResponse | HistoryPartialDataResponse | HistoryNoDataResponse
 
 export interface GetBarsResult {
 	bars: Bar[]
@@ -45,75 +28,86 @@ export interface GetBarsResult {
 }
 
 export class HistoryProvider {
-	private _datafeedUrl: string
-	private readonly _requester: Requester
+	private _lastDataProvider: LastDataProvider = {}
 
-	public constructor(datafeedUrl: string, requester: Requester) {
-		this._datafeedUrl = datafeedUrl
-		this._requester = requester
+	private readonly _dataProvider: DataProviderFunction
+
+	public constructor(dataProvider: DataProviderFunction ) {
+		this._dataProvider = dataProvider
 	}
 
-	public getBars(symbolInfo: LibrarySymbolInfo, resolution: string, rangeStartDate: number, rangeEndDate: number): Promise<GetBarsResult> {
-		const requestParams: RequestParams = {
-			symbol: symbolInfo.ticker || '',
-			resolution: resolution,
-			from: rangeStartDate,
-			to: rangeEndDate,
-		}
-
+	public getBars(symbolInfo: LibrarySymbolInfo, resolution: string, _rangeStartDate: number, _rangeEndDate: number): Promise<GetBarsResult> {
+		
+		// const dataProvider: Array<DataProvider> | string = this._dataProvider()
 		return new Promise((resolve: (result: GetBarsResult) => void, reject: (reason: string) => void) => {
-			this._requester.sendRequest<HistoryResponse>(this._datafeedUrl, 'history', requestParams)
-				.then((response: HistoryResponse | UdfErrorResponse) => {
-					if (response.s !== 'ok' && response.s !== 'no_data') {
-						reject(response.errmsg)
-						return
-					}
-
-					const bars: Bar[] = []
-					const meta: HistoryMetadata = {
-						noData: false,
-					}
-
-					if (response.s === 'no_data') {
-						meta.noData = true
-						meta.nextTime = response.nextTime
-					} else {
-						const volumePresent = response.v !== undefined
-						const ohlPresent = response.o !== undefined
-
-						for (let i = 0; i < response.t.length; ++i) {
-							const barValue: Bar = {
-								time: response.t[i] * 1000,
-								close: Number(response.c[i]),
-								open: Number(response.c[i]),
-								high: Number(response.c[i]),
-								low: Number(response.c[i]),
-							}
-
-							if (ohlPresent) {
-								barValue.open = Number((response as HistoryFullDataResponse).o[i])
-								barValue.high = Number((response as HistoryFullDataResponse).h[i])
-								barValue.low = Number((response as HistoryFullDataResponse).l[i])
-							}
-
-							if (volumePresent) {
-								barValue.volume = Number((response as HistoryFullDataResponse).v[i])
-							}
-
-							bars.push(barValue)
-						}
-					}
-
+			this._dataProvider().then((dataProvider: Array<DataProvider>) => {
+				if (typeof dataProvider === 'string') {
+					reject(dataProvider)
+					return
+				}
+	
+				const bars: Bar[] = []
+				const meta: HistoryMetadata = {
+					noData: false,
+				}
+	
+				if (dataProvider.length === 0) {
+					meta.noData = true
 					resolve({
-						bars: bars,
-						meta: meta,
+						bars,
+						meta
 					})
+					return
+				}
+	
+				const lastDataProvider =  dataProvider[dataProvider.length - 1]
+				if (
+					!this._lastDataProvider.symbol ||
+					!this._lastDataProvider.interval ||
+					!this._lastDataProvider.dataProvider || 
+					this._lastDataProvider.symbol !== symbolInfo.ticker ||
+					this._lastDataProvider.interval !== resolution ||
+					lastDataProvider.timestamp !== this._lastDataProvider.dataProvider.timestamp ||
+					lastDataProvider.c_price !== this._lastDataProvider.dataProvider.c_price ||
+					lastDataProvider.o_price !== this._lastDataProvider.dataProvider.o_price ||
+					lastDataProvider.max_price !== this._lastDataProvider.dataProvider.max_price ||
+					lastDataProvider.min_price !== this._lastDataProvider.dataProvider.min_price ||
+					lastDataProvider.amount !== this._lastDataProvider.dataProvider.amount               
+				) {
+					const offset = new Date().getTimezoneOffset() * 60 * 1000
+					dataProvider.forEach(item => {
+						bars.push({
+							time: item.timestamp - offset,
+							close: Number(item.c_price),
+							open: Number(item.o_price),
+							high: Number(item.max_price),
+							low: Number(item.min_price),
+							volume: Number(item.amount)
+						})
+					})
+				}
+	
+				if (bars.length === 0) {
+					meta.noData = true
+					resolve({
+						bars,
+						meta
+					})
+					return
+				}
+	
+				this._lastDataProvider.symbol = symbolInfo.ticker
+				this._lastDataProvider.interval = resolution
+				this._lastDataProvider.dataProvider = lastDataProvider
+				resolve({
+					bars,
+					meta
 				})
-				.catch((reason?: string | Error) => {
-					const reasonString = getErrorMessage(reason)
-					console.warn(`HistoryProvider: getBars() failed, error=${reasonString}`)
-					reject(reasonString)
-				})
+			}).catch((reason?: string | Error) => {
+				const reasonString = getErrorMessage(reason);
+				console.warn(`HistoryProvider: getBars() failed, error=${reasonString}`);
+				reject(reasonString);
+			})
 		})
 	}
 }

@@ -1,20 +1,3 @@
-export interface RequestParams {
-	[paramName: string]: string | string[] | number
-}
-
-export interface UdfResponse {
-	s: string
-}
-
-export interface UdfOkResponse extends UdfResponse {
-	s: 'ok'
-}
-
-export interface UdfErrorResponse {
-	s: 'error'
-	errmsg: string
-}
-
 /**
  * If you want to enable logs from datafeed set it to `true`
  */

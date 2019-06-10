@@ -29,9 +29,8 @@ export class DataPulseProvider {
 	private _requestsPending: number = 0
 	private readonly _historyProvider: HistoryProvider
 
-	public constructor(historyProvider: HistoryProvider, updateFrequency: number) {
+	public constructor(historyProvider: HistoryProvider) {
 		this._historyProvider = historyProvider
-		setInterval(this._updateData.bind(this), updateFrequency)
 	}
 
 	public subscribeBars(symbolInfo: LibrarySymbolInfo, resolution: string, newDataCallback: SubscribeBarsCallback, listenerGuid: string): void {
@@ -55,7 +54,7 @@ export class DataPulseProvider {
 		logMessage(`DataPulseProvider: unsubscribed for #${listenerGuid}`)
 	}
 
-	private _updateData(): void {
+	public updateData(): void {
 		if (this._requestsPending > 0) {
 			return
 		}
@@ -83,7 +82,7 @@ export class DataPulseProvider {
 		// BEWARE: please note we really need 2 bars, not the only last one
 		// see the explanation below. `10` is the `large enough` value to work around holidays
 		const rangeStartTime = rangeEndTime - periodLengthSeconds(subscriptionRecord.resolution, 10)
-
+		
 		return this._historyProvider.getBars(subscriptionRecord.symbolInfo, subscriptionRecord.resolution, rangeStartTime, rangeEndTime)
 			.then((result: GetBarsResult) => {
 				this._onSubscriberDataReceived(listenerGuid, result)

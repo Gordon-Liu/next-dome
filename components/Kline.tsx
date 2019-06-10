@@ -11,7 +11,11 @@ import {
 	UDFCompatibleDatafeed
 } from './datafeeds/udf-compatible-datafeed'
 
-interface Props {
+import {
+	DataProvider
+} from './datafeeds/history-provider'
+
+interface ChartContainerProps {
 	debug: ChartingLibraryWidgetOptions['debug']
     symbol: ChartingLibraryWidgetOptions['symbol']
 	interval: ChartingLibraryWidgetOptions['interval']
@@ -32,17 +36,87 @@ interface Props {
 	overrides: ChartingLibraryWidgetOptions['overrides']
 }
 
+interface Props extends Partial<ChartContainerProps> {
+	kline: Array<DataProvider>
+	getKline(token: string, market: string, timeType: number): Promise<void>
+}
+
 interface State {
 
 }
 
+interface IntervalButton {
+	title: string
+	interval: string
+	type: number
+}
 
-export default class extends PureComponent<Partial<Props>, State> {
+export default class extends PureComponent<Props, State> {
     private tvWidget: IChartingLibraryWidget | null = null
 
-    public static defaultProps: Props = {
+	private intervalButton: Array<IntervalButton> = [
+		{
+			title: 'realtime',
+			interval: '1',
+			type: 3
+		},
+		{
+			title: '1min',
+			interval: '1',
+			type: 1
+		},
+		{
+			title: '5min',
+			interval: '5',
+			type: 1
+		},
+		{
+			title: '15min',
+			interval: '15',
+			type: 1
+		},
+		{
+			title: '30min',
+			interval: '30',
+			type: 1
+		},
+		{
+			title: '1hour',
+			interval: '60',
+			type: 1
+		},
+		{
+			title: '4hour',
+			interval: '240',
+			type: 1
+		},
+		{
+			title: '6hour',
+			interval: '360',
+			type: 1
+		},
+		{
+			title: '1day',
+			interval: '1D',
+			type: 1
+		},
+		{
+			title: '1week',
+			interval: '1W',
+			type: 1
+		},
+		{
+			title: '1mon',
+			interval: '1M',
+			type: 1
+		}
+	]
+
+	private datafeed!: UDFCompatibleDatafeed
+
+    public static defaultProps: ChartContainerProps = {
 		debug: process.env.NODE_ENV !== 'production',
-		symbol: 'AAPL',
+		symbol: 'BTC_USDT',
 		interval: '1',
 		containerId: 'tv_chart_container',
 		// datafeedUrl: 'https://demo_feed.tradingview.com',
@@ -101,13 +175,76 @@ export default class extends PureComponent<Partial<Props>, State> {
 			'paneProperties.topMargin': 13
 		}
 	}
+	removeAllClassName(target: HTMLElement | null, className: string): void {
+		if (target && target.parentElement) {
+			let all: HTMLCollection = target.parentElement.children
+			for (let i = 0; i < all.length; i++) {
+				let array: Array<string> = all[i].className.split(' ').filter(item => !!item && item !== className)
+				if (array && array.length > 0) {
+					all[i].className = array.join(' ')
+				}
+			}
+		}
+	}
 
-    componentDidMount() {        
+	addClassName(target: HTMLElement | null, className: string): void {
+		if (target) {
+			let old: string = target.className
+			if (old) {
+				let array: Array<string> = old.split(' ')
+				array = array.filter((item: string) => !!item)
+				if (array && array.length > 0) {
+					array.push(className)
+					target.className = array.join(' ')
+				} else {
+					target.className = className
+				}
+			} else {
+				target.className = className
+			}
+		}
+	}
+
+	getKline = (): Promise<Array<DataProvider>> => {
+		return new Promise((resolve: (result: Array<DataProvider>) => void, reject: (reason: string) => void) => {
+			if (typeof this.props.kline === 'string') {
+				reject(this.props.kline)
+			} else {
+				const timeoutKline = (): void => {
+					if (this.props.kline.length === 0) {
+						setTimeout(() => {
+							timeoutKline()
+						}, 10)
+					} else {
+						resolve(this.props.kline)
+					}
+				}
+				timeoutKline()
+			}
+		})
+	}
+
+	componentDidUpdate(prevProps: Props) {
+		if (this.tvWidget && this.datafeed) {
+			if (prevProps.symbol === this.props.symbol) {
+				// K线发生变化
+				// this.datafeed.updateData()
+			} else {
+				// 交易对发生变化
+				if (this.props.symbol) {
+					this.tvWidget.setSymbol(this.props.symbol, '1', () => {})
+				}
+			}
+		}
+    }
+
+    componentDidMount() {  
+		this.datafeed = new UDFCompatibleDatafeed(this.getKline)
         const widgetOptions: ChartingLibraryWidgetOptions = {
 			symbol: this.props.symbol as string,
 			// BEWARE: no trailing slash is expected in feed URL
 			// tslint:disable-next-line:no-any
-			datafeed: new UDFCompatibleDatafeed('https://demo_feed.tradingview.com'),
+			datafeed: this.datafeed,
 			interval: this.props.interval as ChartingLibraryWidgetOptions['interval'],
 			container_id: this.props.containerId as ChartingLibraryWidgetOptions['container_id'],
 			library_path: this.props.libraryPath as string,
@@ -150,17 +287,46 @@ export default class extends PureComponent<Partial<Props>, State> {
         this.tvWidget = tvWidget
         
         tvWidget.onChartReady(() => {
-			const button = tvWidget.createButton()
-			button.setAttribute('title', 'Click to show a notification popup')
-			button.setAttribute('class', 'apply-common-tooltip')
-			button.addEventListener('click', () => tvWidget.showNoticeDialog({
-					title: 'Notification',
-					body: 'TradingView Charting Library API works correctly',
-					callback: () => {
-						console.log('Noticed!')
-					},
-				}));
-			button.innerHTML = 'Check API'
+			// 点击左侧工具栏的显示隐藏按钮
+			// 学习线
+			tvWidget.chart().createStudy('Moving Average', false, false, [5], undefined, {
+				'plot.color': '#a699d9'
+			});
+			tvWidget.chart().createStudy('Moving Average', false, false, [10], undefined, {
+				'plot.color': '#6a9acB'
+			});
+			tvWidget.chart().createStudy('Moving Average', false, false, [30], undefined, {
+				'plot.color': '#b27bc2'
+			});
+			tvWidget.chart().createStudy('Moving Average', false, false, [60], undefined, {
+				'plot.color': '#ffbf53'
+			});
+		})
+
+		tvWidget.headerReady().then(() => {
+			this.intervalButton.forEach((item: IntervalButton)=> {
+				const button: HTMLElement = tvWidget.createButton()
+				button.addEventListener('click', async () => {
+					if (
+						button.parentElement &&
+						button.parentElement.parentElement
+					) {
+						this.removeAllClassName(button.parentElement.parentElement, 'active')
+						this.addClassName(button.parentElement.parentElement, 'active')
+
+						if (this.props.symbol) {
+							let token = this.props.symbol.split('_')[0]
+							let market = this.props.symbol.split('_')[1]
+							await this.props.getKline(token, market, Number(item.interval))
+						}
+
+						tvWidget.chart().setResolution(item.interval, () => {})
+						tvWidget.chart().setChartType(item.type)    
+					}
+					
+				})
+				button.innerHTML = item.title
+			})
 		})
     }
 
@@ -176,7 +342,7 @@ export default class extends PureComponent<Partial<Props>, State> {
 			<Fragment>
 				<div id={ this.props.containerId }/>
 				<style jsx>{`
-					#tv_chart_container {
+					#${this.props.containerId} {
 						height: 500px
 					}
 				`}</style>
