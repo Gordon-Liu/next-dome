@@ -16,8 +16,7 @@ import {
 } from './datafeeds/history-provider'
 
 interface ChartContainerProps {
-	debug: ChartingLibraryWidgetOptions['debug']
-    symbol: ChartingLibraryWidgetOptions['symbol']
+    // symbol: ChartingLibraryWidgetOptions['symbol']
 	interval: ChartingLibraryWidgetOptions['interval']
 	containerId: ChartingLibraryWidgetOptions['container_id']
 
@@ -38,11 +37,14 @@ interface ChartContainerProps {
 
 interface Props extends Partial<ChartContainerProps> {
 	kline: Array<DataProvider>
-	getKline(token: string, market: string, timeType: number): Promise<void>
+	getKline(token: string, market: string, interval: string): Promise<void>
+	interval: string
+	token: string
+	market: string
+
 }
 
 interface State {
-
 }
 
 interface IntervalButton {
@@ -115,8 +117,7 @@ export default class extends PureComponent<Props, State> {
 	private datafeed!: UDFCompatibleDatafeed
 
     public static defaultProps: ChartContainerProps = {
-		debug: process.env.NODE_ENV !== 'production',
-		symbol: 'BTC_USDT',
+		// symbol: 'BTC_USDT',
 		interval: '1',
 		containerId: 'tv_chart_container',
 		// datafeedUrl: 'https://demo_feed.tradingview.com',
@@ -175,6 +176,15 @@ export default class extends PureComponent<Props, State> {
 			'paneProperties.topMargin': 13
 		}
 	}
+
+	constructor(props: Props) {
+        super(props)
+    }
+
+	get symbol() {
+		return `${this.props.token}_${this.props.market}`
+	} 
+
 	removeAllClassName(target: HTMLElement | null, className: string): void {
 		if (target && target.parentElement) {
 			let all: HTMLCollection = target.parentElement.children
@@ -226,22 +236,30 @@ export default class extends PureComponent<Props, State> {
 
 	componentDidUpdate(prevProps: Props) {
 		if (this.tvWidget && this.datafeed) {
-			if (prevProps.symbol === this.props.symbol) {
+			if (
+				prevProps.token === this.props.token && 
+				prevProps.market === this.props.market
+			) {
 				// K线发生变化
-				// this.datafeed.updateData()
+				if (prevProps.kline.length > 0) {
+					if (prevProps.interval === this.props.interval) {
+						this.datafeed.updateData()
+					} else {			
+						this.tvWidget.chart().setResolution(this.props.interval, () => {})
+					}
+				}
 			} else {
 				// 交易对发生变化
-				if (this.props.symbol) {
-					this.tvWidget.setSymbol(this.props.symbol, '1', () => {})
-				}
+				this.tvWidget.setSymbol(this.symbol, this.props.interval, () => {})
 			}
 		}
-    }
+	}
 
     componentDidMount() {  
 		this.datafeed = new UDFCompatibleDatafeed(this.getKline)
         const widgetOptions: ChartingLibraryWidgetOptions = {
-			symbol: this.props.symbol as string,
+			// debug: process.env.NODE_ENV !== 'production' as ChartingLibraryWidgetOptions['symbol'],
+			symbol: this.symbol as string,
 			// BEWARE: no trailing slash is expected in feed URL
 			// tslint:disable-next-line:no-any
 			datafeed: this.datafeed,
@@ -250,6 +268,7 @@ export default class extends PureComponent<Props, State> {
 			library_path: this.props.libraryPath as string,
 
 			locale: this.props.locale || 'en',
+			custom_css_url: 'style/style.css',
 			charts_storage_url: this.props.chartsStorageUrl,
 			charts_storage_api_version: this.props.chartsStorageApiVersion,
 			client_id: this.props.clientId,
@@ -314,18 +333,26 @@ export default class extends PureComponent<Props, State> {
 						this.removeAllClassName(button.parentElement.parentElement, 'active')
 						this.addClassName(button.parentElement.parentElement, 'active')
 
-						if (this.props.symbol) {
-							let token = this.props.symbol.split('_')[0]
-							let market = this.props.symbol.split('_')[1]
-							await this.props.getKline(token, market, Number(item.interval))
+						if (item.interval !== this.props.interval) {
+							await this.props.getKline(this.props.token, this.props.market, item.interval)
 						}
-
-						tvWidget.chart().setResolution(item.interval, () => {})
-						tvWidget.chart().setChartType(item.type)    
+						tvWidget.chart().setChartType(item.type)
 					}
 					
 				})
 				button.innerHTML = item.title
+
+				if (
+					item.interval === this.props.interval &&
+					item.type === 1
+				) {
+					if (
+						button.parentElement &&
+						button.parentElement.parentElement
+					) {
+						this.addClassName(button.parentElement.parentElement, 'active')
+					}
+				}
 			})
 		})
     }

@@ -1,0 +1,34 @@
+html, body, iframe {
+    background-color: #1f293a;
+}
+
+.chart-page {
+    background-color: #1f293a;
+}
+.chart-page .chart-container {
+    border: none;
+}
+.layout__area--top {
+    background-color:  #1f293a;
+}
+.group-wWM3zP_M- {
+    background-color: #1f293a;
+}
+.group-wWM3zP_M- .icon-beK_KS0k-, 
+.group-wWM3zP_M- .text-1sK7vbvh-, 
+.group-wWM3zP_M- .customButton--jqJTfH5- {
+    color: #94abc0;
+}
+
+.group-wWM3zP_M-:hover .icon-beK_KS0k-,
+.group-wWM3zP_M-:hover .text-1sK7vbvh-, 
+.group-wWM3zP_M-:hover .customButton--jqJTfH5-{
+    color: #4980E3;
+}
+
+.group-wWM3zP_M-.active {
+    background-color: #4980E3;
+}
+.group-wWM3zP_M-.active .customButton--jqJTfH5- {
+    color: #fff;
+}
