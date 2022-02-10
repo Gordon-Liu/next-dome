@@ -40,7 +40,7 @@
     "@types/styled-jsx": "^2.2.8",
     "@zeit/next-typescript": "^1.1.1",
     "cross-env": "^5.2.0",
-    "node-sass": "^4.11.0",
+    "node-sass": "^7.0.0",
     "nodemon": "^1.19.0",
     "sass-loader": "^7.1.0",
     "styled-jsx-plugin-sass": "^1.0.0",
